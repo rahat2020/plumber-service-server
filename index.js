@@ -21,6 +21,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
   const productCollection = client.db("product").collection("items");
   const reviewCollection = client.db("product").collection("review");
+  const orderCollection = client.db("product").collection("order");
 
   ///product uploading to the database
    app.post('/addProduct', (req, res) => {
@@ -50,10 +51,38 @@ client.connect(err => {
     })
   })
 
+
   //showing the review to the UI
   app.get('/reviews', (req,res)=>{
     reviewCollection.find({id:req.params._id})
     .toArray((err, documents)=>{
+      res.send(documents)
+    })
+    
+  })
+
+  // order submitting to the database 
+  app.post('/itemOrder', (req,res)=>{
+    const item = req.body
+    orderCollection.insertOne(item)
+    then((result)=>{
+        res.send(result.insertedCount > 0)
+        console.log(result.insertedCount > 0)
+    })
+  })
+
+  // showing selected order item to the UI
+  app.get('/checkOutItem', (req,res)=>{
+    productCollection.find({id:req.params._id})
+    .toArray((err, documents) => {
+      res.send(documents)
+    })
+  })
+ 
+  // showing user all ordered list
+  app.get('/ordered', (req,res)=>{
+    orderCollection.find({email: req.query.email})
+    .toArray((err, documents) => {
       res.send(documents)
     })
   })
